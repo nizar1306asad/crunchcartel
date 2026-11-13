@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crunch Cartel | Customer Visiting & Orders Management Dashboard</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/images/logo.png" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome 6.5.2 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/dashboard.css" />
+</head>
+<body class="dash-page-wrapper">
+
+  <!-- ===================================================================
+       ADMIN LOCK SCREEN (SECURITY GATE)
+  =================================================================== -->
+  <div class="admin-lock-overlay" id="adminLockScreen">
+    <div class="admin-lock-card">
+      <img src="assets/images/logo.png" alt="Crunch Cartel Crown Logo" class="admin-lock-logo" />
+      <div class="admin-lock-title">CRUNCH CARTEL COMMAND CENTER</div>
+      <div class="admin-lock-sub"><i class="fa-solid fa-shield-halved text-yellow"></i> Restricted Master Admin Access Only</div>
+
+      <div class="lock-alert-msg" id="lockAlertMsg">
+        <i class="fa-solid fa-triangle-exclamation"></i> Incorrect master password. Please try again.
+      </div>
+
+      <form id="adminLoginForm" onsubmit="event.preventDefault(); window.handleAdminLogin();">
+        <div class="lock-input-group">
+          <label for="adminPasswordInput">Master Admin Password</label>
+          <div class="lock-input-box">
+            <input type="password" id="adminPasswordInput" placeholder="Enter admin password..." autocomplete="current-password" required />
+            <button type="button" class="lock-toggle-eye" id="togglePasswordBtn" aria-label="Toggle password visibility">
+              <i class="fa-solid fa-eye" id="toggleEyeIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="lock-btn-primary">
+          <i class="fa-solid fa-lock-open"></i> Unlock Admin Portal
+        </button>
+      </form>
+
+      <div style="margin-top: 18px; font-size: 0.78rem; color: #A3A3B2; display: flex; justify-content: space-between; align-items: center;">
+        <a href="index.html" style="color: #A3A3B2; text-decoration: none;"><i class="fa-solid fa-arrow-left"></i> Return to Store</a>
+        <button type="button" id="forgotPwdBtn" style="background: none; border: none; color: #FFB800; cursor: pointer; font-size: 0.78rem; text-decoration: underline;">
+          Reset Password
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Authenticated Wrapper -->
+  <div id="dashboardApp" style="display: none;">
+
+    <!-- ===================================================================
+         DASHBOARD TOP NAVIGATION
+    =================================================================== -->
+    <header class="dash-header">
+      <div class="container dash-header-wrap">
+        <div class="dash-brand-wrap">
+          <a href="index.html">
+            <img src="assets/images/logo.png" alt="Crunch Cartel Logo" />
+          </a>
+          <div>
+            <div class="dash-brand-title">CRUNCH CARTEL COMMAND CENTER</div>
+            <div class="dash-brand-sub"><i class="fa-solid fa-satellite-dish text-yellow"></i> Live Customer Visiting & Orders Storage</div>
+          </div>
+        </div>
+
+        <div class="dash-header-actions">
+          <button type="button" class="dash-top-btn" id="addTestVisitorBtn" title="Simulate a live customer visit">
+            <i class="fa-solid fa-user-plus text-yellow"></i> Add Test Visit
+          </button>
+          <button type="button" class="dash-top-btn" id="addTestOrderBtn" title="Simulate a live incoming food order">
+            <i class="fa-solid fa-receipt text-red"></i> Add Test Order
+          </button>
+          <button type="button" class="dash-top-btn" id="changePasswordBtn" title="Change Admin Master Password">
+            <i class="fa-solid fa-key text-yellow"></i> Change Password
+          </button>
+          <button type="button" class="dash-top-btn" id="logoutBtn" title="Lock & Logout Admin Portal">
+            <i class="fa-solid fa-arrow-right-from-bracket text-red"></i> Logout
+          </button>
+          <a href="index.html" class="dash-top-btn btn-highlight">
+            <i class="fa-solid fa-store"></i> View Live Store
+          </a>
+        </div>
+      </div>
+    </header>
+
+  <!-- ===================================================================
+       MAIN DASHBOARD CONTAINER
+  =================================================================== -->
+  <main class="container" style="margin-top: 25px;">
+
+    <!-- KPI Metrics Row -->
+    <div class="dash-kpis-grid">
+      <!-- Total Visitors -->
+      <div class="kpi-card">
+        <div class="kpi-top-row">
+          <span class="kpi-label">Total Visitors</span>
+          <i class="fa-solid fa-users kpi-icon"></i>
+        </div>
+        <div class="kpi-val" id="kpiTotalVisitors">0</div>
+        <div class="kpi-subtext"><i class="fa-solid fa-circle-check"></i> Recorded in Storage</div>
+      </div>
+
+      <!-- Online Now -->
+      <div class="kpi-card kpi-green">
+        <div class="kpi-top-row">
+          <span class="kpi-label">Active Browsers</span>
+          <i class="fa-solid fa-signal kpi-icon" style="color: #10B981;"></i>
+        </div>
+        <div class="kpi-val" id="kpiOnlineVisitors">1</div>
+        <div class="kpi-subtext" style="color: #10B981;"><i class="fa-solid fa-bolt"></i> Real-time Active</div>
+      </div>
+
+      <!-- Total Orders -->
+      <div class="kpi-card kpi-red">
+        <div class="kpi-top-row">
+          <span class="kpi-label">Total Orders</span>
+          <i class="fa-solid fa-bag-shopping kpi-icon" style="color: #E5252A;"></i>
+        </div>
+        <div class="kpi-val" id="kpiTotalOrders">0</div>
+        <div class="kpi-subtext" style="color: #E5252A;"><i class="fa-solid fa-envelope"></i> Dispatched to Email</div>
+      </div>
+
+      <!-- Total Revenue -->
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-top-row">
+          <span class="kpi-label">Gross Revenue</span>
+          <i class="fa-solid fa-money-bill-wave kpi-icon" style="color: #3B82F6;"></i>
+        </div>
+        <div class="kpi-val" id="kpiTotalRevenue">Rs. 0</div>
+        <div class="kpi-subtext" style="color: #3B82F6;"><i class="fa-solid fa-chart-line"></i> Total Order Volume</div>
+      </div>
+
+      <!-- Average Order Value -->
+      <div class="kpi-card">
+        <div class="kpi-top-row">
+          <span class="kpi-label">Avg Order Value</span>
+          <i class="fa-solid fa-tags kpi-icon"></i>
+        </div>
+        <div class="kpi-val" id="kpiAvgOrder">Rs. 0</div>
+        <div class="kpi-subtext"><i class="fa-solid fa-calculator"></i> Per Transaction</div>
+      </div>
+
+      <!-- Top Item -->
+      <div class="kpi-card">
+        <div class="kpi-top-row">
+          <span class="kpi-label">Top Selling Item</span>
+          <i class="fa-solid fa-crown kpi-icon"></i>
+        </div>
+        <div class="kpi-val" id="kpiTopItem" style="font-size: 1.4rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Kingpin Tower</div>
+        <div class="kpi-subtext"><i class="fa-solid fa-fire"></i> Cartel Favorite</div>
+      </div>
+    </div>
+
+    <!-- Dashboard Navigation Tabs -->
+    <div class="dash-nav-tabs">
+      <button type="button" class="dash-nav-btn active" data-tab="visitors">
+        <i class="fa-solid fa-users-viewfinder"></i> Customer Visitors Log
+      </button>
+      <button type="button" class="dash-nav-btn" data-tab="orders">
+        <i class="fa-solid fa-receipt"></i> Customer Orders Management
+      </button>
+      <button type="button" class="dash-nav-btn" data-tab="analytics">
+        <i class="fa-solid fa-chart-pie"></i> Visitor Analytics & Insights
+      </button>
+    </div>
+
+    <!-- ===================================================================
+         TAB 1: CUSTOMER VISITORS LOG
+    =================================================================== -->
+    <div class="dash-tab-content active" id="tab-visitors">
+      <div class="dash-toolbar-card">
+        <div class="dash-search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="visitorSearchInput" class="dash-search-input" placeholder="Search visitor ID, city, browser, source..." />
+        </div>
+
+        <div class="dash-filter-pills">
+          <button type="button" class="filter-pill-btn v-filter-btn active" data-filter="all">All Visitors</button>
+          <button type="button" class="filter-pill-btn v-filter-btn" data-filter="mobile"><i class="fa-solid fa-mobile-screen"></i> Mobile</button>
+          <button type="button" class="filter-pill-btn v-filter-btn" data-filter="desktop"><i class="fa-solid fa-laptop"></i> Desktop</button>
+          <button type="button" class="filter-pill-btn v-filter-btn" data-filter="social"><i class="fa-brands fa-instagram"></i> Social (FB/IG)</button>
+          <button type="button" class="dash-top-btn" id="exportVisitorsBtn" style="padding: 6px 14px; margin-left: 8px;">
+            <i class="fa-solid fa-file-arrow-down"></i> Export CSV
+          </button>
+        </div>
+      </div>
+
+      <div class="dash-table-container">
+        <table class="dash-data-table">
+          <thead>
+            <tr>
+              <th>Visitor ID</th>
+              <th>Visited At</th>
+              <th>Device & Platform</th>
+              <th>Approx Location</th>
+              <th>Traffic Source</th>
+              <th>Sections & Actions Log</th>
+              <th>Duration</th>
+            </tr>
+          </thead>
+          <tbody id="visitorsTableBody">
+            <!-- Dynamically populated via CartelDashboard -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         TAB 2: CUSTOMER ORDERS MANAGEMENT
+    =================================================================== -->
+    <div class="dash-tab-content" id="tab-orders">
+      <div class="dash-toolbar-card">
+        <div class="dash-search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="orderSearchInput" class="dash-search-input" placeholder="Search order ID, customer name, phone, address..." />
+        </div>
+
+        <div class="dash-filter-pills">
+          <button type="button" class="filter-pill-btn o-filter-btn active" data-filter="all">All Orders</button>
+          <button type="button" class="filter-pill-btn o-filter-btn" data-filter="pending">Pending</button>
+          <button type="button" class="filter-pill-btn o-filter-btn" data-filter="cooking">Cooking</button>
+          <button type="button" class="filter-pill-btn o-filter-btn" data-filter="on the way">On The Way</button>
+          <button type="button" class="filter-pill-btn o-filter-btn" data-filter="delivered">Delivered</button>
+          <button type="button" class="dash-top-btn" id="exportOrdersBtn" style="padding: 6px 14px; margin-left: 8px;">
+            <i class="fa-solid fa-file-excel"></i> Export CSV
+          </button>
+        </div>
+      </div>
+
+      <div class="dash-table-container">
+        <table class="dash-data-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer Information</th>
+              <th>Items Ordered & Payment</th>
+              <th>Bill & Email Dispatch</th>
+              <th>Kitchen Status</th>
+              <th>Quick Actions</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody">
+            <!-- Dynamically populated via CartelDashboard -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         TAB 3: VISITOR ANALYTICS & INSIGHTS
+    =================================================================== -->
+    <div class="dash-tab-content" id="tab-analytics">
+      <div class="analytics-grid">
+        
+        <!-- Device Breakdown -->
+        <div class="analytics-card">
+          <h3><i class="fa-solid fa-chart-column"></i> VISITOR DEVICE BREAKDOWN</h3>
+          <div class="device-bars-wrap">
+            <div class="device-stat-row">
+              <div class="stat-labels-row">
+                <span><i class="fa-solid fa-mobile-screen text-yellow"></i> Mobile Phones</span>
+                <b id="chartMobileLabel">0 (0%)</b>
+              </div>
+              <div class="stat-bar-track">
+                <div class="stat-bar-fill fill-mobile" id="chartMobileBar" style="width: 70%;"></div>
+              </div>
+            </div>
+
+            <div class="device-stat-row">
+              <div class="stat-labels-row">
+                <span><i class="fa-solid fa-laptop text-blue" style="color: #3B82F6;"></i> Desktop / Laptops</span>
+                <b id="chartDesktopLabel">0 (0%)</b>
+              </div>
+              <div class="stat-bar-track">
+                <div class="stat-bar-fill fill-desktop" id="chartDesktopBar" style="width: 25%;"></div>
+              </div>
+            </div>
+
+            <div class="device-stat-row">
+              <div class="stat-labels-row">
+                <span><i class="fa-solid fa-tablet-screen-button text-red"></i> Tablets & iPads</span>
+                <b><span id="chartTabletLabel">5%</span></b>
+              </div>
+              <div class="stat-bar-track">
+                <div class="stat-bar-fill fill-tablet" id="chartTabletBar" style="width: 5%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Traffic Sources Breakdown -->
+        <div class="analytics-card">
+          <h3><i class="fa-solid fa-arrow-trend-up"></i> TRAFFIC SOURCES & REFERRALS</h3>
+          <div id="trafficSourcesList">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Email Integration Notice Card -->
+      <div style="background: #14141B; border: 1px solid rgba(255, 184, 0, 0.2); border-radius: 14px; padding: 24px; margin-top: 24px;">
+        <h3 style="font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: #FFB800; margin-bottom: 10px;">
+          <i class="fa-solid fa-envelope-circle-check"></i> DISPATCH SYSTEM CONFIGURATION
+        </h3>
+        <p style="font-size: 0.9rem; color: #A3A3B2; line-height: 1.6; margin-bottom: 12px;">
+          All customer orders placed on Crunch Cartel automatically trigger a formatted payload delivered to:
+          <b style="color: #FFB800;">Cartelcrunch50@gmail.com</b> and generate a one-tap WhatsApp receipt for Hotline <b style="color: #FFB800;">0340 2402120</b>.
+        </p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <a href="mailto:Cartelcrunch50@gmail.com" class="dash-top-btn"><i class="fa-solid fa-inbox"></i> Open Cartelcrunch50@gmail.com</a>
+          <a href="https://wa.me/923402402120" target="_blank" class="dash-top-btn"><i class="fa-brands fa-whatsapp text-yellow"></i> Test Kitchen WhatsApp</a>
+        </div>
+      </div>
+    </div>
+
+      <!-- Dashboard Footer -->
+      <footer class="dash-footer-bar">
+        <div>
+          &copy; 2026 <b>Crunch Cartel Command Center</b>. All Rights Reserved.
+        </div>
+        <div class="footer-powered-wrap">
+          <a href="http://giriftmedia.com/" target="_blank" rel="noopener noreferrer" class="girift-powered-btn" title="Website Designed & Powered by Girift Media">
+            <span class="powered-by-label">Powered by</span>
+            <span class="girift-brand-name">Girift Media</span>
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
+      </footer>
+
+    </div>
+  </div><!-- /#dashboardApp -->
+
+  <!-- ===================================================================
+       CHANGE PASSWORD MODAL
+  =================================================================== -->
+  <div class="admin-modal-overlay" id="changePasswordModal">
+    <div class="admin-modal-card">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title"><i class="fa-solid fa-key text-yellow"></i> Change Admin Password</div>
+        <button type="button" class="admin-modal-close" id="closeChangePwdBtn">&times;</button>
+      </div>
+
+      <div class="lock-alert-msg" id="changePwdAlert"></div>
+
+      <form id="changePasswordForm" onsubmit="event.preventDefault(); window.handleChangePassword();">
+        <div class="lock-input-group">
+          <label for="currentPasswordInput">Current Master Password</label>
+          <div class="lock-input-box">
+            <input type="password" id="currentPasswordInput" placeholder="Enter current password..." required />
+          </div>
+        </div>
+
+        <div class="lock-input-group">
+          <label for="newPasswordInput">New Master Password</label>
+          <div class="lock-input-box">
+            <input type="password" id="newPasswordInput" placeholder="Min. 6 characters..." required minlength="6" />
+          </div>
+        </div>
+
+        <div class="lock-input-group">
+          <label for="confirmPasswordInput">Confirm New Password</label>
+          <div class="lock-input-box">
+            <input type="password" id="confirmPasswordInput" placeholder="Re-type new password..." required minlength="6" />
+          </div>
+        </div>
+
+        <button type="submit" class="lock-btn-primary" style="margin-top: 15px;">
+          <i class="fa-solid fa-floppy-disk"></i> Save New Password
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Core Modules -->
+  <script src="assets/js/menu-data.js"></script>
+  <script src="assets/js/tracker.js"></script>
+  <script src="assets/js/admin-auth.js"></script>
+  <script src="assets/js/dashboard.js"></script>
+
+</body>
+</html>
